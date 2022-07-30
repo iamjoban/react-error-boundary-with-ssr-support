@@ -1,2 +1,3 @@
 # react-error-boundary-with-ssr-support
-Test-2
+
+Handle SSR rendering error using error boudnary

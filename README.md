@@ -16,8 +16,9 @@ import ErrorBoundaryWithSSRSupport from 'react-error-boundary-with-ssr-support';
 
 
 class App extends React.Component {
-	fallbackHandler() {
+	fallbackHandler(error, errorInfo) {
               /* Anythig you want to render as fallback content */
+		console.log(error, errorInfo);
 		return <div>Error Fallback</div>;
 	}
 

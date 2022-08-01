@@ -3,8 +3,8 @@ import { renderToString } from "react-dom/server";
 
 interface Props {
   children: JSX.Element;
-  fallbackHandler: (error?: Error, errorInfo?: ErrorInfo) => JSX.Element;
-  handleSSRErrors: boolean;
+  fallbackHandler: (error?: Error, errorInfo?: ErrorInfo) => JSX.Element | null;
+  handleSSRErrors?: boolean;
 }
 
 interface State {
@@ -13,13 +13,17 @@ interface State {
   errorInfo?: ErrorInfo;
 }
 
-type RType = JSX.Element | string;
+type RType = JSX.Element | null;
 
 class ErrorBoundary extends Component<Props, State> {
   state: State = {
     hasError: false,
     error: undefined,
     errorInfo: undefined,
+  };
+
+  static defaultProps = {
+    handleSSRErrors: false
   };
 
   static getDerivedStateFromError(error: Error): State {
@@ -30,7 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: true, error, errorInfo });
   }
 
-  renderServer(): RType | string {
+  renderServer(): RType {
     const { fallbackHandler } = this.props;
     try {
       const children = renderToString(this.props.children);

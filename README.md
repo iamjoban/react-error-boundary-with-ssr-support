@@ -16,9 +16,12 @@ import ErrorBoundaryWithSSRSupport from 'react-error-boundary-with-ssr-support';
 
 
 class App extends React.Component {
-	fallbackHandler(error, errorInfo) {
+	reportErrorHandler(error, errorInfo) {
+		/* Log error somewhere */
+	}
+
+	fallbackHandler() {
               /* Anythig you want to render as fallback content */
-		console.log(error, errorInfo);
 		return <div>Error Fallback</div>;
 	}
 
@@ -26,7 +29,7 @@ class App extends React.Component {
 	  return (
 		<>
 		  <p>Hello world</p>
-		  <ErrorBoundaryWithSSRSupport fallbackHandler={this.fallbackHandler} handleSSRErrors>
+		  <ErrorBoundaryWithSSRSupport fallbackHandler={this.fallbackHandler} handleSSRErrors reportErrorHandler={reportErrorHandler}>
 			  /* Any children/component */
 		  </ErrorBoundaryWithSSRSupport>
 		</>
@@ -36,5 +39,5 @@ class App extends React.Component {
 
 export default App;
 ```
-**Note**: if you do to pass **handleSSRErrors** flag as true then error will not be handle on server.
+**Note**: if you do not pass **handleSSRErrors** flag as true then error will not be handle on server.
 

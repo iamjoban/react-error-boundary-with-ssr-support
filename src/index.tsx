@@ -1,60 +1,68 @@
 import { Component, ErrorInfo } from "react";
-import { renderToString } from "react-dom/server";
+const renderToString  =  require('react-dom/server').renderToString;
 
 interface Props {
   children: JSX.Element;
-  fallbackHandler: (error?: Error, errorInfo?: ErrorInfo) => JSX.Element | null;
-  handleSSRErrors?: boolean;
+  handleSSRErrors: boolean;
+  fallbackHandler: () => JSX.Element | null;
+  reportErrorHandler: (error: Error, errorInfo?: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
-  error?: Error;
-  errorInfo?: ErrorInfo;
 }
 
 type RType = JSX.Element | null;
 
 class ErrorBoundary extends Component<Props, State> {
   state: State = {
-    hasError: false,
-    error: undefined,
-    errorInfo: undefined,
+    hasError: false
   };
 
   static defaultProps = {
-    handleSSRErrors: false
+    handleSSRErrors: false,
+    fallbackHandler: () => null,
+    reportErrorHandler: () => undefined
   };
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({ hasError: true, error, errorInfo });
+    const { reportErrorHandler} = this.props;
+    
+    reportErrorHandler(error, errorInfo);
+    this.setState({ hasError: true });
   }
 
-  renderServer(): RType {
-    const { fallbackHandler } = this.props;
+  renderOnServer(): RType {
+    const { fallbackHandler, children , reportErrorHandler} = this.props;
     try {
-      const children = renderToString(this.props.children);
+      // Find if there is any error
+      renderToString(children);
 
-      return <div dangerouslySetInnerHTML={{ __html: children }} />;
+      /*
+       Return children as is. Do not have to retunr output of renderToString.
+       renderToString is just to find if there is any error in children we are rendering.
+      */
+      return children;
     } catch (e) {
-      return fallbackHandler?.(e);
+      reportErrorHandler(e);
+      return fallbackHandler();
     }
   }
 
   render(): RType {
     const { fallbackHandler, handleSSRErrors, children } = this.props;
-    const { hasError, error, errorInfo } = this.state;
+    const { hasError } = this.state;
 
     if (typeof window === "undefined" && handleSSRErrors) {
-      return this.renderServer();
+      return this.renderOnServer();
     }
 
     if (hasError) {
-      return fallbackHandler?.(error, errorInfo);
+      return fallbackHandler();
     }
 
     return children;
